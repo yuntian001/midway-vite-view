@@ -53,8 +53,8 @@ export class BuildPlugin extends BasePlugin {
         viteConfigFile:{
           usage: 'vite 配置文件 默认为命令根目录 vite.config.js',
         },
-        viewsDir: {
-          usage: 'views dir 默认 views',
+        viewDir: {
+          usage: 'views dir 默认 view',
         },
       },
     },
@@ -122,8 +122,12 @@ export class BuildPlugin extends BasePlugin {
     if(!this.options.outDir){
       this.options.outDir = 'public/html';
     }
+    this.options.outDir = path.resolve(process.cwd(),this.options.outDir)
     if(!this.options.prefix){
       this.options.prefix = '/public/html/';
+    }
+    if(!this.options.viewDir){
+      this.options.viewDir = 'view';
     }
     this.config = Object.assign(this.config,this.options);
     await this.getViteConfig();
@@ -182,7 +186,7 @@ export class BuildPlugin extends BasePlugin {
   }
 
   async setFileByFileName(){
-    await fileDisplay(this.options.views,(fileName,filePath)=>{
+    await fileDisplay(this.options.viewDir,(fileName,filePath)=>{
         if(fileName === 'index.html'){
           this.config.clientIndex.push(filePath)
         }else if(fileName === 'entry-server.js'){

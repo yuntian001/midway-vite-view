@@ -9,8 +9,7 @@ declare module '@midwayjs/core/dist/interface' {
   interface MidwayConfig {
     viteView?: {
       prod?:boolean,//是否是发布环境 用以区分
-      configFile?:string,//配置文件夹/文件地址
-      viteConfigFile?:string,//vite配置文件地址
+      // viteConfigFile?:string,//vite配置文件地址
       clientIndex:string[],//客户端渲染index.html列表
       entryServers?:string[],//服务端渲染entry-server.js地址
     };

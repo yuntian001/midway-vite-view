@@ -49,6 +49,8 @@ export class viteView implements IViewEngine {
       const html = template
         .replace(`<!--preload-links-->`, preloadLinks)
         .replace(`<!--app-html-->`, appHtml)
+        .replace(`<html`, '<html data-ssr="true"')
+
       return html;
     } catch (e) {
       vite && vite.ssrFixStacktrace(e);
@@ -74,7 +76,7 @@ export class viteView implements IViewEngine {
     }
     locals.entry = locals.entry?path.resolve( options.root,locals.entry):undefined;
     if(this.prod){
-      this.prodPath =  path.resolve(this.staticFileConfig.dirs.default.dir+'/html',options.root.slice(this.app.getAppDir().length+1));
+      this.prodPath =  this.staticFileConfig.dirs.default.dir+'/html';
       tpl = path.resolve(this.prodPath,tpl.slice(options.root.length+1));
       locals.entry = locals.entry?path.resolve(this.prodPath,locals.entry.slice(options.root.length+1)):undefined;
     }
