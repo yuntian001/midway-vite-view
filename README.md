@@ -2,7 +2,11 @@
 
 midway+vite 服务端渲染和客户端渲染组件
 
-###使用实例
+
+### github
+[https://github.com/yuntian001/midway-vite-view](https://github.com/yuntian001/midway-vite-view)
+
+### 使用示例
 [https://github.com/yuntian001/midway-vite-view/tree/main/example](https://github.com/yuntian001/midway-vite-view/tree/main/example)
 
 ## 使用说明
