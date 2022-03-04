@@ -13,7 +13,7 @@ midway+vite 服务端渲染和客户端渲染组件
 
 - 安装组件扩展包
 ```bash
-$ npm require midway-vite-view -d
+$ npm install midway-vite-view -d
 ```
 - view 文件夹下创建放入对应视图文件
 
