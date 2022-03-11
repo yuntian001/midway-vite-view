@@ -37,7 +37,7 @@ import * as viteView from 'midway-vite-view';//引入view组件
   view: { //midwayjs 视图配置 说明参考 https://midwayjs.org/docs/extensions/render
     defaultViewEngine: 'viteView',
   },
-  viteView: { midway-vite-view 配置配置详细说明见下方
+  viteView: { //midway-vite-view 配置配置详细说明见下方
     clientIndex: ['index/index.html', 'admin/index.html'],
     entryServers: [
       'index/src/entry-server.js',
