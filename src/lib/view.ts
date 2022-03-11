@@ -25,7 +25,7 @@ export class viteView implements IViewEngine {
   private prodPath:string;
   private prod:Boolean;
 
-  async getSsrHtml(indexName:string,entryServerUrl:string,url:string) {
+  async getSsrHtml(indexName:string,entryServerUrl:string,url:string,assign:object|undefined) {
     const vite = await createVite();
     try {
       let template, render, manifest = {};
@@ -46,21 +46,31 @@ export class viteView implements IViewEngine {
         return  this.ctx.redirect(context['url']);
 
       }
-      const html = template
+      let html = template
         .replace(`<!--preload-links-->`, preloadLinks)
         .replace(`<!--app-html-->`, appHtml)
         .replace(`<html`, '<html data-ssr="true"')
-
+      if(assign){
+        for (const [key, value] of Object.entries(assign)) {
+          html = html.replace(new RegExp(`{{${key}}}`,'g'),value);
+        }
+      }
       return html;
     } catch (e) {
       vite && vite.ssrFixStacktrace(e);
       console.error('服务端渲染失败，执行客户端渲染逻辑', e);
-      return await this.getClientHtml(indexName);
+      return await this.getClientHtml(indexName,assign);
     }
   }
 
-  async getClientHtml(indexName){
-    return fs.readFileSync(indexName, 'utf-8');
+  async getClientHtml(indexName,assign:object|undefined){
+    let html = fs.readFileSync(indexName, 'utf-8');
+    if(assign){
+      for (const [key, value] of Object.entries(assign)) {
+        html = html.replace(new RegExp(`{{${key}}}`,'g'),value);
+      }
+    }
+    return html
   }
 
   async render(name: string, locals?: Record<string, any>, options?: RenderOptions) {
@@ -82,8 +92,8 @@ export class viteView implements IViewEngine {
     }
 
     if(locals.entry){
-      return locals.ctx.body = await this.getSsrHtml(tpl,locals.entry,locals.ctx.originalUrl);
+      return locals.ctx.body = await this.getSsrHtml(tpl,locals.entry,locals.ctx.originalUrl,locals['assign']);
     }
-    return locals.ctx.body = await this.getClientHtml(tpl);
+    return locals.ctx.body = await this.getClientHtml(tpl,locals['assign']);
   }
 };

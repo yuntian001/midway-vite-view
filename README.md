@@ -52,10 +52,13 @@ import * as viteView from 'midway-vite-view';//引入view组件
     //服务端渲染
     return this.ctx.render('index/index.html', {
       entry: 'index/src/entry-server.js',
+      assign:{keyWords:'vite midway'},//html中{{keyWords}}的会被替换为vite midway
     });
 
     //客户端渲染
-    return this.ctx.render('index/index.html');
+    return this.ctx.render('index/index.html',{
+      assign:{keyWords:'vite midway'},//html中{{keyWords}}的会被替换为vite midway
+    });
 
 ```
 
