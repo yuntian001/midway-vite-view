@@ -45,6 +45,7 @@ module.exports = {
     }
   ],
   build: {
-    minify: false
+    minify: false,
+    emptyOutDir:true,
   }
 }

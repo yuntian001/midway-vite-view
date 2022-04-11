@@ -146,6 +146,7 @@ export class BuildPlugin extends BasePlugin {
     this.config.clientIndex.forEach((file,key)=>{
       input.push(path.resolve(this.rootDir, file));
     });
+    const assetsPrefix = this.config.outDir.replace( process.cwd(),'').replace(/\\/g,'/');
     await buildVite({
       base:this.config.prefix,
       publicDir:false,
@@ -156,7 +157,12 @@ export class BuildPlugin extends BasePlugin {
         rollupOptions:{input},
         ssr:false
       }
-    })
+    });
+    const content = fs.readFileSync(this.config.outDir+'/ssr-manifest.json','utf8');
+    fs.writeFileSync(this.config.outDir+'/ssr-manifest.json',
+      content.replace(
+        new RegExp('"/'+(this.viteCofig.build?.assetsDir || 'assets')
+          ,'g'),'"'+assetsPrefix+'/'+(this.viteCofig.build?.assetsDir || 'assets')));
     if(this.config.entryServers.length){
       const input ={};
       this.config.entryServers.forEach(async (file,key)=>{

@@ -18,6 +18,9 @@ export class HomeController {
   async home(): Promise<string> {
     return this.ctx.render('index/index.html', {
       entry: 'index/src/entry-server.js',
+      assign:{
+        title:'midway-vite-view'
+      }
     });
   }
 }

@@ -7,6 +7,7 @@ module.exports = {
   root:process.cwd()+'/view',
   plugins: [react()],
   build: {
-    minify: false
+    minify: false,
+    emptyOutDir:true,
   }
 }
