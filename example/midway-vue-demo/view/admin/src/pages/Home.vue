@@ -28,10 +28,11 @@ const ImportType = load('ImportType')
 const Foo = defineAsyncComponent(() =>
   import('../components/Foo').then((mod) => mod.Foo)
 )
+console.log(import.meta.env)
 function load(file) {
   return defineAsyncComponent(() => import(`../components/${file}.vue`))
 }
-const url = import.meta.url || window.location.href
+const url = import.meta.env.SSR?import.meta.url :( window.document.getElementsByClassName('import-meta-url')[0].textContent|| window.location.href);
 const protocol = new URL(url).protocol
 
 const state = reactive({
@@ -39,7 +40,7 @@ const state = reactive({
   protocol,
   url
 })
-console.log(window.location.href);//测试服务端渲染报错
+// console.log(window.location.href);//测试服务端渲染报错
 </script>
 
 <style scoped>

@@ -24,6 +24,11 @@ import foo from '@foo'
 import { msg as virtualMsg } from '@virtual-file'
 import { reactive, defineAsyncComponent } from 'vue'
 import Button from '../components/button'
+import { useStore } from 'vuex'
+const store = useStore();//store会在服务端与客户端共享
+console.log('========counte=====',store.state.count);
+store.commit('increment')//因为setup 在服务端核客户端都会调用 所以这里会被调用两遍(服务端一遍客户端一遍count最终会变成2)
+console.log('========counte=====',store.state.count);
 const ImportType = load('ImportType')
 const Foo = defineAsyncComponent(() =>
   import('../components/Foo').then((mod) => mod.Foo)
@@ -33,7 +38,8 @@ function load(file) {
 }
 const url = import.meta.env.SSR
   ? import.meta.url
-  : document.querySelector('.import-meta-url').textContent
+  : document.querySelector('.import-meta-url').textContent;
+console.log(url,import.meta)
 const protocol = new URL(url).protocol
 
 const state = reactive({
