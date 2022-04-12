@@ -146,7 +146,6 @@ export class BuildPlugin extends BasePlugin {
     this.config.clientIndex.forEach((file,key)=>{
       input.push(path.resolve(this.rootDir, file));
     });
-    const assetsPrefix = this.config.outDir.replace( process.cwd(),'').replace(/\\/g,'/');
     await buildVite({
       base:this.config.prefix,
       publicDir:false,
@@ -162,12 +161,12 @@ export class BuildPlugin extends BasePlugin {
     fs.writeFileSync(this.config.outDir+'/ssr-manifest.json',
       content.replace(
         new RegExp('"/'+(this.viteCofig.build?.assetsDir || 'assets')
-          ,'g'),'"'+assetsPrefix+'/'+(this.viteCofig.build?.assetsDir || 'assets')));
+          ,'g'),'"'+this.config.prefix+(this.viteCofig.build?.assetsDir || 'assets')));
     if(this.config.entryServers.length){
-      const input ={};
+      // const input ={};
       this.config.entryServers.forEach(async (file,key)=>{
         let fileName = path.resolve(this.rootDir, file);
-        input[fileName.substring(this.rootDir.length+1).slice(0,-path.extname(file).length)] = file;
+        // input[fileName.substring(this.rootDir.length+1).slice(0,-path.extname(file).length)] = file;
         await buildVite({
           base:this.config.prefix,
           publicDir:false,
