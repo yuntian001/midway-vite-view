@@ -23,9 +23,7 @@ export class MidwayViteViewConfiguration {
   app: koa.Application;
 
   async onReady() {
-    // TODO something
     this.app.useMiddleware(ViteMiddleware);
     this.viewManager.use('viteView', viteView);
-
   }
 }

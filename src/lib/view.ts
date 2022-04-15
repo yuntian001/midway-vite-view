@@ -64,7 +64,9 @@ export class viteView implements IViewEngine {
   }
 
   async getClientHtml(indexName,assign:object|undefined){
-    let html = fs.readFileSync(indexName, 'utf-8');
+    let html = fs.readFileSync(indexName, 'utf-8')
+      .replace(`<!--preload-links-->`, '')
+      .replace(`<!--app-html-->`, '');
     if(assign){
       for (const [key, value] of Object.entries(assign)) {
         html = html.replace(new RegExp(`{{${key}}}`,'g'),value);

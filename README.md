@@ -11,10 +11,23 @@ midway+vite 服务端渲染和客户端渲染组件
 
 ## 使用说明
 
+midway+vite 依赖于静态文件托管组件：[@midwayjs/static-file@3](https://midwayjs.org/docs/extensions/static_file)
+
+所有静态文件需要按照@midwayjs/static-file@3规则放在对应的文件夹中,@midwayjs/static-file@3默认的静态文件夹为public
+
+| web 支持情况| |
+|     ---    | --- |
+| @midwayjs/koa |	✅ |
+| @midwayjs/faas | ✅ |
+| @midwayjs/web	 | ✅ |
+| @midwayjs/express	| ❌ |
+
+## 快速开始
 - 安装组件扩展包
 ```bash
 $ npm install midway-vite-view -d
 ```
+- 项目根目录下新建public文件夹
 - view 文件夹下创建放入对应视图文件
 
 - 修改 vite.config.js root 参数为process.cwd()+'/view'
@@ -84,3 +97,5 @@ import * as viteView from 'midway-vite-view';//引入view组件
 |outDir|public|编译输出目录|
 |viteConfigFile|命令根目录 vite.config.js|vite 配置文件 |
 |viewDir|view|视图文件夹 仅在type2模式下使用|
+
+

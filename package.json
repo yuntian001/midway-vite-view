@@ -1,15 +1,15 @@
 {
   "name": "midway-vite-view",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "midway vite ssr view vue  react, midway 的 vite 服务端渲染和客户端渲染组件，支持vue3 react,服务端渲染失败后会自动执行客户端渲染。 Midway's Vite server rendering and client rendering components support vue3 React， Client rendering is automatically performed when server rendering fails。",
   "main": "dist/index.js",
   "bin": {
     "vite-view": "bin/vite-view.js"
   },
   "scripts": {
-    "build": "cross-env midway-bin build -c",
-    "test": "cross-env midway-bin test --ts",
-    "cov": "cross-env midway-bin cov --ts",
+    "build": "midway-bin build -c",
+    "test": "midway-bin test --ts",
+    "cov": "midway-bin cov --ts",
     "lint": "mwts check",
     "lint:fix": "mwts fix",
     "vueBuild": "vite bind"
@@ -43,7 +43,6 @@
     "@types/jest": "^27.4.0",
     "@types/node": "^16.11.22",
     "compression": "^1.7.4",
-    "cross-env": "^6.0.0",
     "jest": "^27.5.1",
     "mwts": "^1.0.5",
     "ts-jest": "^27.1.3",
