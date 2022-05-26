@@ -11,5 +11,9 @@ export default defineConfig({
     react({
     }),
     tsconfigPaths({}),
-  ]
+  ],
+  build: {
+    minify: false,
+    emptyOutDir:true,
+  }
 });
