@@ -11,7 +11,7 @@ export class HomeController {
     //服务端渲染
     return this.ctx.render('index.html', {
       entry:  'src/entry-server.tsx' ,
-      assign:{title:'vite midway'},//html中{{title}}的会被替换为vite midway
+      assign:{title:'vite midway react'},//html中{{title}}的会被替换为vite midway
     });
   }
 }
