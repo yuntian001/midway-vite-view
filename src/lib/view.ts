@@ -117,7 +117,7 @@ export class viteView implements IViewEngine {
     }
 
     if (locals.entry) {
-      locals.entry = locals.entry.replace(/\.[jt]sx$/, '.js');
+      this.prod && (locals.entry = locals.entry.replace(/\.[jt]sx$/, '.js'));
       return (locals.ctx.body = await this.getSsrHtml(
         tpl,
         locals.entry,

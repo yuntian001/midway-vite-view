@@ -81,7 +81,7 @@ export class BuildPlugin extends BasePlugin {
     await Promise.all(
       configFiles.map(file => {
         return (async () => {
-          const c = (await this.loadConfig(this.getDiskPath(file))) as any;
+          const c = (await this.loadFile(this.getDiskPath(file))) as any;
           this.midwayConfig = Object.assign(this.config, c);
         })();
       })
@@ -236,6 +236,15 @@ export class BuildPlugin extends BasePlugin {
     }
 
     return exports;
+  }
+
+  private async loadFile(fileName: string) {
+    try {
+      return this.loadConfig(fileName); // test环境
+    } catch (error) {
+      const { config: c } = await loadConfigFromFile(undefined, fileName); // build
+      return c;
+    }
   }
 
   private getDiskPath(path: string) {
