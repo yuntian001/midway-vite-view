@@ -5,7 +5,7 @@ import * as info from '@midwayjs/info';
 import { join } from 'path';
 // import { DefaultErrorFilter } from './filter/default.filter';
 // import { NotFoundFilter } from './filter/notfound.filter';
-import { ReportMiddleware } from './middleware/report.middleware';
+// import { ReportMiddleware } from './middleware/report.middleware';
 import * as viteView from 'midway-vite-view';//引入view组件
 
 @Configuration({
@@ -26,7 +26,7 @@ export class ContainerLifeCycle {
 
   async onReady() {
     // add middleware
-    this.app.useMiddleware([ReportMiddleware]);
+    // this.app.useMiddleware([ReportMiddleware]);
     // add filter
     // this.app.useFilter([NotFoundFilter, DefaultErrorFilter]);
   }

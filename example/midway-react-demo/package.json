@@ -11,11 +11,15 @@
     "@midwayjs/koa": "^3.0.0",
     "@midwayjs/logger": "^2.14.0",
     "@midwayjs/validate": "^3.0.0",
+    "antd": "^4.20.6",
+    "consola": "^2.15.3",
+    "less": "^4.1.2",
     "midway-vite-view": "^1.2.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-router": "^5.2.1",
-    "react-router-dom": "^5.3.0"
+    "react-router-dom": "^5.3.0",
+    "react-vant": "^2.0.0-dev.30-8"
   },
   "devDependencies": {
     "@midwayjs/cli": "^1.2.90",
@@ -23,15 +27,22 @@
     "@types/jest": "^26.0.10",
     "@types/koa": "^2.13.4",
     "@types/node": "14",
+    "@types/react": "^17.0.45",
+    "@types/react-dom": "^17.0.17",
+    "@types/react-router-dom": "^5.3.3",
+    "@vitejs/plugin-legacy": "^1.8.2",
     "@vitejs/plugin-react": "*",
     "compression": "^1.7.4",
     "cross-env": "^6.0.0",
     "express": "^4.17.1",
     "jest": "^26.4.0",
     "mwts": "^1.0.5",
+    "postcss-px2vp": "^1.1.4",
     "serve-static": "^1.14.1",
     "ts-jest": "^26.2.0",
-    "typescript": "^4.0.0"
+    "typescript": "^4.0.0",
+    "vite-plugin-style-import": "^2.0.0",
+    "vite-tsconfig-paths": "^3.4.1"
   },
   "engines": {
     "node": ">=12.0.0"
@@ -44,7 +55,7 @@
     "lint": "mwts check",
     "lint:fix": "mwts fix",
     "ci": "npm run cov",
-    "build": "midway-bin build -c"
+    "build": "midway-bin build -c  && vite-view build --viteConfigFile=\"vite.config.ts\""
   },
   "midway-bin-clean": [
     ".vscode/.tsbuildinfo",
