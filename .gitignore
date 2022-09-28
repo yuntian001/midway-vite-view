@@ -13,3 +13,4 @@ run/
 *.un~
 .tsbuildinfo
 .tsbuildinfo.*
+example/midway-vue-demo/public/html/

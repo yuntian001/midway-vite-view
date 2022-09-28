@@ -118,13 +118,13 @@ export class viteView implements IViewEngine {
 
     if (locals.entry) {
       this.prod && (locals.entry = locals.entry.replace(/\.[jt]sx$/, '.js'));
-      return (locals.ctx.body = await this.getSsrHtml(
+      return await this.getSsrHtml(
         tpl,
         locals.entry,
         locals.ctx.originalUrl,
         locals['assign']
-      ));
+      );
     }
-    return (locals.ctx.body = await this.getClientHtml(tpl, locals['assign']));
+    return await this.getClientHtml(tpl, locals['assign']);
   }
 }

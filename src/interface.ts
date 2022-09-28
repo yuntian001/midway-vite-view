@@ -10,4 +10,5 @@ export interface CommandOptions {
   outDir: string;
   viteConfigFile: string;
   viewDir: string;
+  prefix: string;
 }
