@@ -1,8 +1,9 @@
-const { createServer: createViteServer } = require('vite');
+import { createServer } from 'vite';
 let vite;
-export const createVite = async () => {
+export const createVite = async (configFile?: string) => {
   if (!vite) {
-    vite = await createViteServer({
+    vite = await createServer({
+      configFile,
       server: {
         middlewareMode: 'ssr',
         watch: {

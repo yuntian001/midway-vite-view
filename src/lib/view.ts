@@ -42,7 +42,7 @@ export class viteView implements IViewEngine {
         render = (await vite.ssrLoadModule(entryServerUrl)).render;
       } else {
         manifest = require(this.staticFileConfig.dirs.default.dir +
-          '/html/ssr-manifest.json');
+          `/${this.viteViewConfig.outPrefix}/ssr-manifest.json`);
         render = require(entryServerUrl).render;
       }
       const context = {};
@@ -106,7 +106,8 @@ export class viteView implements IViewEngine {
       ? path.resolve(options.root, locals.entry)
       : undefined;
     if (this.prod) {
-      this.prodPath = this.staticFileConfig.dirs.default.dir + '/html';
+      this.prodPath =
+        this.staticFileConfig.dirs.default.dir + `/${this.viteViewConfig.outPrefix}`;
       tpl = path.resolve(this.prodPath, tpl.slice(options.root.length + 1));
       locals.entry = locals.entry
         ? path.resolve(

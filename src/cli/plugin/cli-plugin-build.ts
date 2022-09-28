@@ -1,3 +1,4 @@
+// eslint-disable-next-line node/no-extraneous-import
 import { BasePlugin } from '@midwayjs/command-core';
 import { loadConfigFromFile, build as buildVite } from 'vite';
 import * as fs from 'fs';
@@ -58,6 +59,9 @@ export class BuildPlugin extends BasePlugin {
         prefix: {
           usage: '静态缓存前缀 默认为staticFile.dirs.default.prefix或/public',
         },
+        outPrefix: {
+          usage: '编译输出文件夹 默认为viteView.outPrefix或html',
+        },
       },
     },
   };
@@ -91,22 +95,23 @@ export class BuildPlugin extends BasePlugin {
         })();
       })
     );
-    this.options.outDir =
-      this.options.outDir ?? this.midwayConfig?.staticFile?.dirs?.default?.dir;
-    this.options.prefix =
-      this.options.prefix ??
-      (this.midwayConfig?.staticFile?.dirs?.default?.prefix || '/public') +
-        '/html/';
-    this.options.viteConfigFile =
-      this.options.viteConfigFile ??
-      this.midwayConfig?.viteView?.viteConfigFile;
   }
 
   async getViteConfig() {
-    const { config } = await loadConfigFromFile(
-      undefined,
-      this.options.viteConfigFile || 'vite.config.js'
-    );
+    let filePath = this.options.viteConfigFile;
+    if (filePath) {
+      if (!fs.existsSync(filePath)) {
+        throw new Error(`vite 配置文件 ${filePath} 不存在`);
+      }
+    }
+    filePath = this.getDiskPath('vite.config.js');
+    if (!fs.existsSync(filePath)) {
+      filePath = this.getDiskPath('vite.config.ts');
+    }
+    if (!fs.existsSync(filePath)) {
+      throw new Error(`vite 配置文件 ${filePath} 不存在`);
+    }
+    const { config } = await loadConfigFromFile(undefined, filePath);
     this.viteCofig = config;
     this.rootDir = this.viteCofig.root || this.rootDir;
     if (
@@ -136,13 +141,20 @@ export class BuildPlugin extends BasePlugin {
         throw e;
       }
     }
-    if (!this.options.outDir) {
-      this.options.outDir = 'public/html';
-    }
-    this.options.outDir = path.resolve(process.cwd(), this.options.outDir);
-    if (!this.options.prefix) {
-      this.options.prefix = '/public/html/';
-    }
+    this.options.outDir =
+      this.options.outDir ??
+      (this.midwayConfig?.staticFile?.dirs?.default?.dir || 'public');
+    this.options.prefix =
+      this.options.prefix ??
+      (this.midwayConfig?.staticFile?.dirs?.default?.prefix || '/public');
+    this.options.viteConfigFile =
+      this.options.viteConfigFile ??
+      this.midwayConfig?.viteView?.viteConfigFile;
+    this.options.outPrefix =
+      this.options.outPrefix ??
+      (this.midwayConfig?.viteView?.outPrefix || 'html');
+    this.options.outDir += `/${this.options.outPrefix}/`;
+    this.options.prefix += `/${this.options.outPrefix}/`;
     if (!this.options.viewDir) {
       this.options.viewDir = 'view';
     }
@@ -166,7 +178,7 @@ export class BuildPlugin extends BasePlugin {
 
   async run() {
     const input = [];
-    this.config.clientIndex.forEach((file, key) => {
+    this.config.clientIndex.forEach((file: string) => {
       input.push(path.resolve(this.rootDir, file));
     });
     await buildVite({
@@ -181,11 +193,11 @@ export class BuildPlugin extends BasePlugin {
       },
     });
     const content = fs.readFileSync(
-      this.config.outDir + '/ssr-manifest.json',
+      this.config.outDir + 'ssr-manifest.json',
       'utf8'
     );
     fs.writeFileSync(
-      this.config.outDir + '/ssr-manifest.json',
+      this.config.outDir + 'ssr-manifest.json',
       content.replace(
         new RegExp('"/' + (this.viteCofig.build?.assetsDir || 'assets'), 'g'),
         '"' + this.config.prefix + (this.viteCofig.build?.assetsDir || 'assets')
@@ -193,7 +205,7 @@ export class BuildPlugin extends BasePlugin {
     );
     if (this.config.entryServers.length) {
       // const input ={};
-      this.config.entryServers.forEach(async (file, key) => {
+      this.config.entryServers.forEach(async (file: string) => {
         const fileName = path.resolve(this.rootDir, file);
         // input[fileName.substring(this.rootDir.length+1).slice(0,-path.extname(file).length)] = file;
         await buildVite({
@@ -204,7 +216,6 @@ export class BuildPlugin extends BasePlugin {
             emptyOutDir: false,
             outDir:
               this.config.outDir +
-              '/' +
               fileName
                 .substring(this.rootDir.length + 1)
                 .slice(0, -path.basename(file).length),
