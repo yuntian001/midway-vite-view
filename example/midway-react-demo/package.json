@@ -55,7 +55,7 @@
     "lint": "mwts check",
     "lint:fix": "mwts fix",
     "ci": "npm run cov",
-    "build": "midway-bin build -c  && vite-view build --viteConfigFile=\"vite.config.ts\""
+    "build": "midway-bin build -c  && vite-view build"
   },
   "midway-bin-clean": [
     ".vscode/.tsbuildinfo",
