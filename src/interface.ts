@@ -1,9 +1,10 @@
-export interface ViteViewOptions {
+export interface ViteViewConfig {
   prod?: boolean;
   clientIndex: Array<string>;
-  entryServers: Array<string>;
+  entryServers?: Array<string>;
   outPrefix: string;
   viteConfigFile?: string;
+  staticFileKey: string;
 }
 
 export interface CommandOptions {
@@ -15,4 +16,5 @@ export interface CommandOptions {
   viewDir: string;
   prefix: string;
   outPrefix: string;
+  staticFileKey: string;
 }

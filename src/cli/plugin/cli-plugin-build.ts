@@ -5,7 +5,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as fsPromises from 'fs/promises';
 import { CommandOptions } from '../../interface';
-import { isAbsolute, resolve } from 'path';
+import { resolve } from 'path';
+import { normalizePath } from 'vite';
 
 //递归遍历文件并执行callback
 const fileDisplay = async function (
@@ -48,7 +49,8 @@ export class BuildPlugin extends BasePlugin {
           usage: '配置文件夹/配置文件，默认为src/config',
         },
         outDir: {
-          usage: '编译输出目录默认为，staticFile.dirs.default.dir或public',
+          usage:
+            '编译输出目录默认为，默认为staticFile.dirs[staticFileKey].dir或public',
         },
         viteConfigFile: {
           usage: 'vite 配置文件 默认为viteView.viteConfigFile或vite.config.js',
@@ -57,10 +59,15 @@ export class BuildPlugin extends BasePlugin {
           usage: 'views dir 默认 view',
         },
         prefix: {
-          usage: '静态缓存前缀 默认为staticFile.dirs.default.prefix或/public',
+          usage:
+            '静态缓存前缀 默认为staticFile.dirs[staticFileKey].prefix或/public',
         },
         outPrefix: {
-          usage: '编译输出文件夹 默认为viteView.outPrefix或html',
+          usage: '编译输出前缀 默认为viteView.outPrefix或html',
+        },
+        staticFileKey: {
+          usage:
+            '使用的staticFile.dirs的key  默认为viteView.staticFileKey或default',
         },
       },
     },
@@ -70,7 +77,7 @@ export class BuildPlugin extends BasePlugin {
     'build:setFile': this.setFile.bind(this),
     'build:run': this.run.bind(this),
   };
-  async getConfig() {
+  async loadConfig() {
     let configFiles;
     const stat = await fs.statSync(this.options.config);
     if (stat.isFile()) {
@@ -96,22 +103,60 @@ export class BuildPlugin extends BasePlugin {
       })
     );
   }
-
-  async getViteConfig() {
+  async getConfig() {
+    if (+this.options.type === 1) {
+      try {
+        await this.loadConfig();
+      } catch (e) {
+        console.error(
+          '解析midway配置失败你可以使用-t 2 用文件名匹配模式进行构建'
+        );
+        throw e;
+      }
+    }
+    const defaultConfig = {
+      viteView: {
+        clientIndex: [],
+        outPrefix: 'html',
+        staticFileKey: 'default',
+      },
+      staticFile: {
+        dirs: {
+          default: {
+            prefix: '/public',
+            dir: 'public',
+          },
+        },
+      },
+    };
+    this.midwayConfig.viteView = Object.assign(
+      defaultConfig.viteView,
+      this.midwayConfig.viteView
+    );
+    this.midwayConfig.staticFile = Object.assign(
+      defaultConfig.staticFile,
+      this.midwayConfig.staticFile
+    );
+  }
+  getViteFilePath(){
     let filePath = this.options.viteConfigFile;
     if (filePath) {
       if (!fs.existsSync(filePath)) {
         throw new Error(`vite 配置文件 ${filePath} 不存在`);
       }
+      return filePath;
     }
     filePath = this.getDiskPath('vite.config.js');
     if (!fs.existsSync(filePath)) {
       filePath = this.getDiskPath('vite.config.ts');
     }
     if (!fs.existsSync(filePath)) {
-      throw new Error(`vite 配置文件 ${filePath} 不存在`);
+      throw new Error(`vite 配置文件 vite.config.js、${filePath} 不存在`);
     }
-    const { config } = await loadConfigFromFile(undefined, filePath);
+    return filePath;
+  }
+  async getViteConfig() {
+    const { config } = await loadConfigFromFile(undefined, this.getViteFilePath());
     this.viteCofig = config;
     this.rootDir = this.viteCofig.root || this.rootDir;
     if (
@@ -131,30 +176,19 @@ export class BuildPlugin extends BasePlugin {
     if (!this.options.type) {
       this.options.type = 1;
     }
-    if (+this.options.type === 1) {
-      try {
-        await this.getConfig();
-      } catch (e) {
-        console.error(
-          '解析midway配置失败你可以使用-t 2 用文件名匹配模式进行构建'
-        );
-        throw e;
-      }
-    }
+    await this.getConfig();
+    this.options.staticFileKey =
+      this.options.staticFileKey ?? this.midwayConfig.viteView.staticFileKey;
     this.options.outDir =
       this.options.outDir ??
-      (this.midwayConfig?.staticFile?.dirs?.default?.dir || 'public');
+      this.midwayConfig.staticFile.dirs[this.options.staticFileKey].dir;
     this.options.prefix =
       this.options.prefix ??
-      (this.midwayConfig?.staticFile?.dirs?.default?.prefix || '/public');
+      this.midwayConfig.staticFile.dirs[this.options.staticFileKey].prefix;
     this.options.viteConfigFile =
-      this.options.viteConfigFile ??
-      this.midwayConfig?.viteView?.viteConfigFile;
+      this.options.viteConfigFile ?? this.midwayConfig.viteView.viteConfigFile;
     this.options.outPrefix =
-      this.options.outPrefix ??
-      (this.midwayConfig?.viteView?.outPrefix || 'html');
-    this.options.outDir += `/${this.options.outPrefix}/`;
-    this.options.prefix += `/${this.options.outPrefix}/`;
+      this.options.outPrefix ?? this.midwayConfig.viteView.outPrefix;
     if (!this.options.viewDir) {
       this.options.viewDir = 'view';
     }
@@ -164,6 +198,8 @@ export class BuildPlugin extends BasePlugin {
         this.options[key] = this.getDiskPath(this.options[key]);
       }
     });
+    this.options.outDir = normalizePath(this.options.outDir+`/${this.options.outPrefix}/`);
+    this.options.prefix = normalizePath(this.options.prefix+`/${this.options.outPrefix}/`);
     Object.assign(this.config, this.options);
     await this.getViteConfig();
   }
@@ -230,7 +266,7 @@ export class BuildPlugin extends BasePlugin {
 
   async setFileByConfig() {
     this.config.clientIndex = this.midwayConfig.viteView.clientIndex;
-    this.config.entryServers = this.midwayConfig.viteView?.entryServers || [];
+    this.config.entryServers = this.midwayConfig.viteView.entryServers || [];
   }
 
   async setFileByFileName() {
@@ -244,7 +280,13 @@ export class BuildPlugin extends BasePlugin {
   }
 
   private getDiskPath(path?: string) {
-    if (!path || isAbsolute(path)) return path;
-    return resolve(this.core.cwd, path);
+    if(typeof path === 'string'){
+      if(!path){
+        return this.core.cwd;
+      }
+      return resolve(this.core.cwd, path);
+    }else{
+      return path;
+    }
   }
 }

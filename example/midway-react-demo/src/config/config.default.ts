@@ -9,7 +9,6 @@ export default {
   },
   viteView: {
     // prod:true,
-    viteConfigFile:'vite.config.ts',
     clientIndex: ['index.html'],
     entryServers: ['src/entry-server.tsx'],
   },

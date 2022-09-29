@@ -1,6 +1,7 @@
-import { ViteViewOptions } from '../interface';
+import { ViteViewConfig } from '../interface';
 
-export const viteView = {
+export const viteView: ViteViewConfig = {
   clientIndex: [],
   outPrefix: 'html',
-} as ViteViewOptions;
+  staticFileKey: 'default',
+};

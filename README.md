@@ -22,6 +22,10 @@ midway+vite 依赖于静态文件托管组件：[@midwayjs/static-file@3](https:
 | @midwayjs/web	 | ✅ |
 | @midwayjs/express	| ❌ |
 
+## 代码示例
+
+[example/](./example/)
+
 ## 快速开始
 - 安装组件扩展包
 ```bash
@@ -60,6 +64,8 @@ import * as viteView from 'midway-vite-view';//引入view组件
 
 ```
 
+- vite 配置文件中 按[示例](./example/)进行更改
+
 - 控制器中调用
 ```
     //服务端渲染
@@ -84,18 +90,24 @@ import * as viteView from 'midway-vite-view';//引入view组件
 | 配置项      |类型|是否必须 | 说明 |
 | -----------| ----------- | ----------- |----------- |
 | prod      | boolean| 否 |是否是发布环境 如果不传用运行环境是否为prod以区分|
-|clientIndex|array|是|客户端渲染index.html列表 路径相对于view文件夹|
-|entryServers|array|否|服务端渲染entry-server.js地址 路径相对于view文件夹|
+| clientIndex |string[]|是|客户端渲染index.html列表 路径相对于view文件夹|
+| entryServers|string[]|否|服务端渲染entry-server地址 路径相对于view文件夹|
+| outPrefix | string | 否 | 打包前缀目录，会在static-file文件夹下创建子文件夹进行打包 |
+| viteConfigFile | string | 否 | vite配置文件地址，默认按vite规则选择vite.config.js/vite.config.ts | 
+| staticFileKey | string | 否 | 对应的staticFile.dirs的key 默认为default |
 
 ## 打包命令 vite-view build 参数说明
 传参方式为 vite-view build --type 1
 
-| 参数项      |默认值 | 说明 |
+| 参数项      | 默认值 | 说明 |
 | ---------- | ----------- |----------- |
 |type | 1 | 构建方式:1=根据配置文件自动构建，2=自动寻找viewDir文件夹下的index.html和entry-server.js进行构建|
-|config|src/config|midway配置文件夹/配置文件|
-|outDir|public|编译输出目录|
-|viteConfigFile|命令根目录 vite.config.js|vite 配置文件 |
-|viewDir|view|视图文件夹 仅在type2模式下使用|
+| config | src/config |midway配置文件夹/配置文件|
+| staticFileKey |viteView.staticFileKey 或 default|使用的staticFile.dirs的key|
+| outDir | staticFile.dirs[staticFileKey].dir 或 public |编译输出目录|
+| viteConfigFile |命令根目录 vite.config.js、vite.config.ts|vite 配置文件 |
+| viewDir | view | 视图文件夹 |
+| prefix | staticFile.dirs[staticFileKey].prefix 或 /public | 静态缓存前缀 |
+| outPrefix | viteView.outPrefix 或 html | 编译输出前缀,会在static-file文件夹下创建子文件夹进行打包 |
 
 

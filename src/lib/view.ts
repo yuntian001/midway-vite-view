@@ -1,18 +1,20 @@
 import { Provide, Config, App, Inject } from '@midwayjs/decorator';
+import { StaticFileOptions } from '@midwayjs/static-file';
 import { IViewEngine, RenderOptions } from '@midwayjs/view';
 import { createVite } from '../vite';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Application } from '@midwayjs/koa';
 import { Context } from '@midwayjs/koa';
+import { ViteViewConfig } from '../interface';
 
 @Provide()
 export class viteView implements IViewEngine {
   @Config('staticFile')
-  staticFileConfig;
+  staticFileConfig: StaticFileOptions;
 
   @Config('viteView')
-  viteViewConfig;
+  viteViewConfig: ViteViewConfig;
 
   @App()
   app: Application;
@@ -41,8 +43,9 @@ export class viteView implements IViewEngine {
         template = await vite.transformIndexHtml(url, template);
         render = (await vite.ssrLoadModule(entryServerUrl)).render;
       } else {
-        manifest = require(this.staticFileConfig.dirs.default.dir +
-          `/${this.viteViewConfig.outPrefix}/ssr-manifest.json`);
+        manifest = require(this.staticFileConfig.dirs[
+          this.viteViewConfig.staticFileKey
+        ].dir + `/${this.viteViewConfig.outPrefix}/ssr-manifest.json`);
         render = require(entryServerUrl).render;
       }
       const context = {};
@@ -107,7 +110,8 @@ export class viteView implements IViewEngine {
       : undefined;
     if (this.prod) {
       this.prodPath =
-        this.staticFileConfig.dirs.default.dir + `/${this.viteViewConfig.outPrefix}`;
+        this.staticFileConfig.dirs[this.viteViewConfig.staticFileKey].dir +
+        `/${this.viteViewConfig.outPrefix}`;
       tpl = path.resolve(this.prodPath, tpl.slice(options.root.length + 1));
       locals.entry = locals.entry
         ? path.resolve(
