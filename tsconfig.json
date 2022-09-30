@@ -14,7 +14,8 @@
     "noImplicitReturns": false,
     "pretty": true,
     "declaration": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "resolveJsonModule":true
   },
   "exclude": [
     "dist",

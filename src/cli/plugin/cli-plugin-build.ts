@@ -33,6 +33,7 @@ export class BuildPlugin extends BasePlugin {
     clientIndex: [],
     entryServers: [],
   };
+  private env = 'prod';
   private midwayConfig: any = {};
   private viteCofig: any = {};
   private rootDir = this.core.cwd;
@@ -77,21 +78,22 @@ export class BuildPlugin extends BasePlugin {
     'build:setFile': this.setFile.bind(this),
     'build:run': this.run.bind(this),
   };
+  initEnv(){
+    if (process.env.MIDWAY_SERVER_ENV) {
+      this.env = process.env.MIDWAY_SERVER_ENV;
+    } else if (process.env.NODE_ENV) {
+      this.env = process.env.NODE_ENV;
+    }
+  }
   async loadConfig() {
     let configFiles;
     const stat = await fs.statSync(this.options.config);
     if (stat.isFile()) {
       configFiles = [this.options.config];
     } else {
-      let env = 'prod';
-      if (process.env.MIDWAY_SERVER_ENV) {
-        env = process.env.MIDWAY_SERVER_ENV;
-      } else if (process.env.NODE_ENV) {
-        env = process.env.NODE_ENV;
-      }
       configFiles = [
         this.options.config + '/config.default.ts',
-        this.options.config + `/config.${env}.ts`,
+        this.options.config + `/config.${this.env}.ts`,
       ].filter(file => fs.existsSync(file));
     }
     await Promise.all(
@@ -156,7 +158,7 @@ export class BuildPlugin extends BasePlugin {
     return filePath;
   }
   async getViteConfig() {
-    const { config } = await loadConfigFromFile(undefined, this.getViteFilePath());
+    const { config } = await loadConfigFromFile({command:'build',mode:this.env,ssrBuild:true}, this.getViteFilePath());
     this.viteCofig = config;
     this.rootDir = this.viteCofig.root || this.rootDir;
     if (
@@ -170,6 +172,7 @@ export class BuildPlugin extends BasePlugin {
     }
   }
   async formatOptions() {
+    this.initEnv();
     if (!this.options.config) {
       this.options.config = 'src/config';
     }
