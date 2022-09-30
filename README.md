@@ -31,7 +31,7 @@ midway+vite 依赖于静态文件托管组件：[@midwayjs/static-file@3](https:
 ## 快速开始
 - 安装组件扩展包
 ```bash
-$ npm install vite -d
+$ npm install vite
 $ npm install midway-vite-view
 ```
 - 项目根目录下新建public文件夹
