@@ -1,6 +1,8 @@
 # midway-vite-view
 
-midway+vite 服务端渲染和客户端渲染组件
+midway+vite 服务端渲染和客户端渲染组件,支持Vite2、Vite3。
+
+当前说明对应`^2.0.0`版本，`^1.0.0`(仅支持Vite2)文档请查看 [v1](/yuntian001/midway-vite-view/tree/v1) 分支
 
 
 ### github
@@ -29,7 +31,8 @@ midway+vite 依赖于静态文件托管组件：[@midwayjs/static-file@3](https:
 ## 快速开始
 - 安装组件扩展包
 ```bash
-$ npm install midway-vite-view -d
+$ npm install vite -d
+$ npm install midway-vite-view
 ```
 - 项目根目录下新建public文件夹
 - view 文件夹下创建放入对应视图文件
@@ -55,11 +58,10 @@ import * as viteView from 'midway-vite-view';//引入view组件
     defaultViewEngine: 'viteView',
   },
   viteView: { //midway-vite-view 配置配置详细说明见下方
-    clientIndex: ['index/index.html', 'admin/index.html'],
-    entryServers: [
-      'index/src/entry-server.js',
-      'admin/src/entry-server.js',
-    ],
+    views:{
+     'index/index.html':'index/src/entry-server.js',
+     'admin/index.html':'admin/src/entry-server.js',
+    }
   },
 
 ```
@@ -68,14 +70,14 @@ import * as viteView from 'midway-vite-view';//引入view组件
 
 - 控制器中调用
 ```
-    //服务端渲染
-    return this.ctx.render('index/index.html', {
-      entry: 'index/src/entry-server.js',
+    //服务端渲染 
+    return this.ctx.render('admin/index.html', {
       assign:{keyWords:'vite midway'},//html中{{keyWords}}的会被替换为vite midway
     });
 
     //客户端渲染
     return this.ctx.render('index/index.html',{
+      ssr:false, //false代表强制客户端渲染,默认会根据配置自动匹配
       assign:{keyWords:'vite midway'},//html中{{keyWords}}的会被替换为vite midway
     });
 
@@ -90,8 +92,7 @@ import * as viteView from 'midway-vite-view';//引入view组件
 | 配置项      |类型|是否必须 | 说明 |
 | -----------| ----------- | ----------- |----------- |
 | prod      | boolean| 否 |是否是发布环境 如果不传用运行环境是否为prod以区分|
-| clientIndex |string[]|是|客户端渲染index.html列表 路径相对于view文件夹|
-| entryServers|string[]|否|服务端渲染entry-server地址 路径相对于view文件夹|
+| views | `{[key:string]:string}`  | 是 | key为index.html路径(相对于view文件夹)，value为服务端渲染entry-server路径(相对于view文件夹,如果没有entry-server，填'')|
 | outPrefix | string | 否 | 打包前缀目录，会在static-file文件夹下创建子文件夹进行打包,默认为html |
 | viteConfigFile | string | 否 | vite配置文件地址，默认按vite规则选择vite.config.js/vite.config.ts | 
 | staticFileKey | string | 否 | 对应的staticFile.dirs的key 默认为default |

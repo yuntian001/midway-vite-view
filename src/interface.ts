@@ -1,7 +1,6 @@
 export interface ViteViewConfig {
   prod?: boolean;
-  clientIndex: Array<string>;
-  entryServers?: Array<string>;
+  views:Record<string,string>;
   outPrefix: string;
   viteConfigFile?: string;
   staticFileKey: string;

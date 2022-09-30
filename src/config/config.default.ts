@@ -1,7 +1,7 @@
 import { ViteViewConfig } from '../interface';
 
 export const viteView: ViteViewConfig = {
-  clientIndex: [],
+  views: {},
   outPrefix: 'html',
   staticFileKey: 'default',
 };

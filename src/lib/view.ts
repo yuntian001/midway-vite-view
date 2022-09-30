@@ -93,11 +93,11 @@ export class viteView implements IViewEngine {
   }
 
   async renderString(
-    tpl: string,
+    name: string,
     locals?: Record<string, any>,
     options?: RenderOptions
   ) {
-    tpl = path.resolve(options.root, tpl);
+    let tpl = options.name;
     if (this.viteViewConfig.prod !== undefined) {
       this.prod = this.viteViewConfig.prod;
     } else {
@@ -105,27 +105,26 @@ export class viteView implements IViewEngine {
         process.env.MIDWAY_SERVER_ENV === 'prod' ||
         process.env.NODE_ENV === 'prod';
     }
-    locals.entry = locals.entry
-      ? path.resolve(options.root, locals.entry)
-      : undefined;
+    let entry = this.viteViewConfig.views[options.name];
     if (this.prod) {
       this.prodPath =
         this.staticFileConfig.dirs[this.viteViewConfig.staticFileKey].dir +
         `/${this.viteViewConfig.outPrefix}`;
-      tpl = path.resolve(this.prodPath, tpl.slice(options.root.length + 1));
-      locals.entry = locals.entry
-        ? path.resolve(
-            this.prodPath,
-            locals.entry.slice(options.root.length + 1)
-          )
-        : undefined;
+      tpl = path.resolve(this.prodPath, tpl);
+      entry = locals.ssr !== false && entry
+        ? path.resolve(this.prodPath, entry).replace(/\.[jt]sx$/, '.js')
+        : '';
+    } else {
+      tpl = path.resolve(options.root, tpl);
+      entry = locals.ssr !== false && entry
+        ? path.resolve(options.root, entry)
+        : '';
     }
 
-    if (locals.entry) {
-      this.prod && (locals.entry = locals.entry.replace(/\.[jt]sx$/, '.js'));
+    if (entry) {
       return await this.getSsrHtml(
         tpl,
-        locals.entry,
+        entry,
         locals.ctx.originalUrl,
         locals['assign']
       );

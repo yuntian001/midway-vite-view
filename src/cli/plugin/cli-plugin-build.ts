@@ -4,9 +4,10 @@ import { loadConfigFromFile, build as buildVite } from 'vite';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as fsPromises from 'fs/promises';
-import { CommandOptions } from '../../interface';
+import { CommandOptions, ViteViewConfig } from '../../interface';
 import { resolve } from 'path';
 import { normalizePath } from 'vite';
+import * as extend from 'extend2';
 
 //递归遍历文件并执行callback
 const fileDisplay = async function (
@@ -29,12 +30,29 @@ const fileDisplay = async function (
 };
 export class BuildPlugin extends BasePlugin {
   public options = {} as CommandOptions;
-  private config: any = {
+  private config = {
     clientIndex: [],
     entryServers: [],
-  };
+  } as {
+    clientIndex: string[],
+    entryServers: string[]
+  } & CommandOptions;
   private env = 'prod';
-  private midwayConfig: any = {};
+  private midwayConfig = {
+    viteView: {
+      views: {},
+      outPrefix: 'html',
+      staticFileKey: 'default',
+    } as ViteViewConfig,
+    staticFile: {
+      dirs: {
+        default: {
+          prefix: '/public',
+          dir: 'public',
+        },
+      },
+    },
+  };
   private viteCofig: any = {};
   private rootDir = this.core.cwd;
   commands = {
@@ -78,37 +96,34 @@ export class BuildPlugin extends BasePlugin {
     'build:setFile': this.setFile.bind(this),
     'build:run': this.run.bind(this),
   };
-  initEnv(){
+  initEnv() {
     if (process.env.MIDWAY_SERVER_ENV) {
       this.env = process.env.MIDWAY_SERVER_ENV;
     } else if (process.env.NODE_ENV) {
       this.env = process.env.NODE_ENV;
     }
   }
-  async loadConfig() {
-    let configFiles;
-    const stat = await fs.statSync(this.options.config);
-    if (stat.isFile()) {
-      configFiles = [this.options.config];
-    } else {
-      configFiles = [
-        this.options.config + '/config.default.ts',
-        this.options.config + `/config.${this.env}.ts`,
-      ].filter(file => fs.existsSync(file));
-    }
-    await Promise.all(
-      configFiles.map(file => {
-        return (async () => {
-          const { config: c } = await loadConfigFromFile(undefined, file);
-          this.midwayConfig = Object.assign(this.config, c);
-        })();
-      })
-    );
-  }
   async getConfig() {
     if (+this.options.type === 1) {
       try {
-        await this.loadConfig();
+        let configFiles;
+        const stat = await fs.statSync(this.options.config);
+        if (stat.isFile()) {
+          configFiles = [this.options.config];
+        } else {
+          configFiles = [
+            this.options.config + '/config.default.ts',
+            this.options.config + `/config.${this.env}.ts`,
+          ].filter(file => fs.existsSync(file));
+        }
+        await Promise.all(
+          configFiles.map(file => {
+            return (async () => {
+              const { config } = await loadConfigFromFile(undefined, file);
+              this.midwayConfig = extend(true, this.midwayConfig, config);
+            })();
+          })
+        );
       } catch (e) {
         console.error(
           '解析midway配置失败你可以使用-t 2 用文件名匹配模式进行构建'
@@ -116,31 +131,8 @@ export class BuildPlugin extends BasePlugin {
         throw e;
       }
     }
-    const defaultConfig = {
-      viteView: {
-        clientIndex: [],
-        outPrefix: 'html',
-        staticFileKey: 'default',
-      },
-      staticFile: {
-        dirs: {
-          default: {
-            prefix: '/public',
-            dir: 'public',
-          },
-        },
-      },
-    };
-    this.midwayConfig.viteView = Object.assign(
-      defaultConfig.viteView,
-      this.midwayConfig.viteView
-    );
-    this.midwayConfig.staticFile = Object.assign(
-      defaultConfig.staticFile,
-      this.midwayConfig.staticFile
-    );
   }
-  getViteFilePath(){
+  getViteFilePath() {
     let filePath = this.options.viteConfigFile;
     if (filePath) {
       if (!fs.existsSync(filePath)) {
@@ -158,7 +150,7 @@ export class BuildPlugin extends BasePlugin {
     return filePath;
   }
   async getViteConfig() {
-    const { config } = await loadConfigFromFile({command:'build',mode:this.env,ssrBuild:true}, this.getViteFilePath());
+    const { config } = await loadConfigFromFile({ command: 'build', mode: this.env, ssrBuild: true }, this.getViteFilePath());
     this.viteCofig = config;
     this.rootDir = this.viteCofig.root || this.rootDir;
     if (
@@ -201,8 +193,8 @@ export class BuildPlugin extends BasePlugin {
         this.options[key] = this.getDiskPath(this.options[key]);
       }
     });
-    this.options.outDir = normalizePath(this.options.outDir+`/${this.options.outPrefix}/`);
-    this.options.prefix = normalizePath(this.options.prefix+`/${this.options.outPrefix}/`);
+    this.options.outDir = normalizePath(this.options.outDir + `/${this.options.outPrefix}/`);
+    this.options.prefix = normalizePath(this.options.prefix + `/${this.options.outPrefix}/`);
     Object.assign(this.config, this.options);
     await this.getViteConfig();
   }
@@ -268,27 +260,29 @@ export class BuildPlugin extends BasePlugin {
   }
 
   async setFileByConfig() {
-    this.config.clientIndex = this.midwayConfig.viteView.clientIndex;
-    this.config.entryServers = this.midwayConfig.viteView.entryServers || [];
+    for (const [index, ssr] of Object.entries(this.midwayConfig.viteView.views)) {
+      this.config.clientIndex.push(index);
+      ssr && this.config.entryServers.push(ssr);
+    }
   }
 
   async setFileByFileName() {
     await fileDisplay(this.options.viewDir, (fileName, filePath) => {
       if (fileName === 'index.html') {
         this.config.clientIndex.push(filePath);
-      } else if (fileName === 'entry-server.js') {
+      } else if (fileName === 'entry-server.js' || fileName === 'entry-server.jsx' || fileName === 'entry-server.tsx') {
         this.config.entryServers.push(filePath);
       }
     });
   }
 
   private getDiskPath(path?: string) {
-    if(typeof path === 'string'){
-      if(!path){
+    if (typeof path === 'string') {
+      if (!path) {
         return this.core.cwd;
       }
       return resolve(this.core.cwd, path);
-    }else{
+    } else {
       return path;
     }
   }
