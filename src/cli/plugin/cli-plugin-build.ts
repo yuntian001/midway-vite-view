@@ -34,8 +34,8 @@ export class BuildPlugin extends BasePlugin {
     clientIndex: [],
     entryServers: [],
   } as {
-    clientIndex: string[],
-    entryServers: string[]
+    clientIndex: string[];
+    entryServers: string[];
   } & CommandOptions;
   private env = 'prod';
   private midwayConfig = {
@@ -150,7 +150,10 @@ export class BuildPlugin extends BasePlugin {
     return filePath;
   }
   async getViteConfig() {
-    const { config } = await loadConfigFromFile({ command: 'build', mode: this.env, ssrBuild: true }, this.getViteFilePath());
+    const { config } = await loadConfigFromFile(
+      { command: 'build', mode: this.env, ssrBuild: true },
+      this.getViteFilePath()
+    );
     this.viteCofig = config;
     this.rootDir = this.viteCofig.root || this.rootDir;
     if (
@@ -193,8 +196,12 @@ export class BuildPlugin extends BasePlugin {
         this.options[key] = this.getDiskPath(this.options[key]);
       }
     });
-    this.options.outDir = normalizePath(this.options.outDir + `/${this.options.outPrefix}/`);
-    this.options.prefix = normalizePath(this.options.prefix + `/${this.options.outPrefix}/`);
+    this.options.outDir = normalizePath(
+      this.options.outDir + `/${this.options.outPrefix}/`
+    );
+    this.options.prefix = normalizePath(
+      this.options.prefix + `/${this.options.outPrefix}/`
+    );
     Object.assign(this.config, this.options);
     await this.getViteConfig();
   }
@@ -260,7 +267,9 @@ export class BuildPlugin extends BasePlugin {
   }
 
   async setFileByConfig() {
-    for (const [index, ssr] of Object.entries(this.midwayConfig.viteView.views)) {
+    for (const [index, ssr] of Object.entries(
+      this.midwayConfig.viteView.views
+    )) {
       this.config.clientIndex.push(index);
       ssr && this.config.entryServers.push(ssr);
     }
@@ -270,7 +279,11 @@ export class BuildPlugin extends BasePlugin {
     await fileDisplay(this.options.viewDir, (fileName, filePath) => {
       if (fileName === 'index.html') {
         this.config.clientIndex.push(filePath);
-      } else if (fileName === 'entry-server.js' || fileName === 'entry-server.jsx' || fileName === 'entry-server.tsx') {
+      } else if (
+        fileName === 'entry-server.js' ||
+        fileName === 'entry-server.jsx' ||
+        fileName === 'entry-server.tsx'
+      ) {
         this.config.entryServers.push(filePath);
       }
     });

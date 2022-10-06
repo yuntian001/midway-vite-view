@@ -91,7 +91,7 @@ import * as viteView from 'midway-vite-view';//引入view组件
 
 | 配置项      |类型|是否必须 | 说明 |
 | -----------| ----------- | ----------- |----------- |
-| prod      | boolean| 否 |是否是发布环境 如果不传用运行环境是否为prod以区分|
+| prod      | boolean| 否 |是否是发布环境 如果不传用运行环境是否为prod/production以区分|
 | views | `{[key:string]:string}`  | 是 | key为index.html路径(相对于view文件夹)，value为服务端渲染entry-server路径(相对于view文件夹,如果没有entry-server，填'')|
 | outPrefix | string | 否 | 打包前缀目录，会在static-file文件夹下创建子文件夹进行打包,默认为html |
 | viteConfigFile | string | 否 | vite配置文件地址，默认按vite规则选择vite.config.js/vite.config.ts | 

@@ -101,9 +101,7 @@ export class viteView implements IViewEngine {
     if (this.viteViewConfig.prod !== undefined) {
       this.prod = this.viteViewConfig.prod;
     } else {
-      this.prod =
-        process.env.MIDWAY_SERVER_ENV === 'prod' ||
-        process.env.NODE_ENV === 'prod';
+      this.prod = ['prod', 'production'].includes(this.app.getEnv());
     }
     let entry = this.viteViewConfig.views[options.name];
     if (this.prod) {
@@ -111,14 +109,16 @@ export class viteView implements IViewEngine {
         this.staticFileConfig.dirs[this.viteViewConfig.staticFileKey].dir +
         `/${this.viteViewConfig.outPrefix}`;
       tpl = path.resolve(this.prodPath, tpl);
-      entry = locals.ssr !== false && entry
-        ? path.resolve(this.prodPath, entry).replace(/\.[jt]sx$/, '.js')
-        : '';
+      entry =
+        locals.ssr !== false && entry
+          ? path
+              .resolve(this.prodPath, entry)
+              .replace(/(\.[jt]sx)|(\.ts)$/, '.js')
+          : '';
     } else {
       tpl = path.resolve(options.root, tpl);
-      entry = locals.ssr !== false && entry
-        ? path.resolve(options.root, entry)
-        : '';
+      entry =
+        locals.ssr !== false && entry ? path.resolve(options.root, entry) : '';
     }
 
     if (entry) {

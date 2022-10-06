@@ -1,6 +1,6 @@
 export interface ViteViewConfig {
   prod?: boolean;
-  views:Record<string,string>;
+  views: Record<string, string>;
   outPrefix: string;
   viteConfigFile?: string;
   staticFileKey: string;

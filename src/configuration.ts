@@ -1,10 +1,11 @@
-import { Configuration, Inject, App } from '@midwayjs/decorator';
+import { Configuration, Inject, App, Config } from '@midwayjs/decorator';
 import * as DefaultConfig from './config/config.default';
 import * as view from '@midwayjs/view';
 import { viteView } from './lib/view';
 import * as koa from '@midwayjs/koa';
 import { ViteMiddleware } from './vite.middleware';
 import * as staticFile from '@midwayjs/static-file';
+import { ViteViewConfig } from './interface';
 
 @Configuration({
   namespace: 'viteView',
@@ -22,8 +23,16 @@ export class MidwayViteViewConfiguration {
   @App()
   app: koa.Application;
 
+  @Config('viteView')
+  viteViewConfig: ViteViewConfig;
+
   async onReady() {
-    this.app.useMiddleware(ViteMiddleware);
+    if (
+      this.viteViewConfig.prod === false ||
+      !['prod', 'production'].includes(this.app.getEnv())
+    ) {
+      this.app.useMiddleware(ViteMiddleware);
+    }
     this.viewManager.use('viteView', viteView);
   }
 }
