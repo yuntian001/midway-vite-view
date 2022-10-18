@@ -9,7 +9,7 @@ import { Context } from '@midwayjs/koa';
 import { ViteViewConfig } from '../interface';
 
 @Provide()
-export class viteView implements IViewEngine {
+export class ViteView implements IViewEngine {
   @Config('staticFile')
   staticFileConfig: StaticFileOptions;
 
@@ -29,7 +29,8 @@ export class viteView implements IViewEngine {
     indexName: string,
     entryServerUrl: string,
     url: string,
-    assign: object | undefined
+    assign: object | undefined,
+    outPrefix: string
   ) {
     const vite = await createVite();
     try {
@@ -45,7 +46,7 @@ export class viteView implements IViewEngine {
       } else {
         manifest = require(this.staticFileConfig.dirs[
           this.viteViewConfig.staticFileKey
-        ].dir + `/${this.viteViewConfig.outPrefix}/ssr-manifest.json`);
+        ].dir + `/${outPrefix}/ssr-manifest.json`);
         render = require(entryServerUrl).render;
       }
       const context = {};
@@ -103,17 +104,23 @@ export class viteView implements IViewEngine {
     } else {
       this.prod = ['prod', 'production'].includes(this.app.getEnv());
     }
-    let entry = this.viteViewConfig.views[options.name];
+    let entry = '' as undefined | string;
+    let outPrefix = this.viteViewConfig.outPrefix;
+    const entryInfo = this.viteViewConfig.views[options.name];
+    if (typeof entryInfo === 'object') {
+      entry = entryInfo.entryServer;
+      outPrefix = outPrefix + (entryInfo.outPrefix ? ('/' + entryInfo.outPrefix) : '');
+    }
     if (this.prod) {
       this.prodPath =
         this.staticFileConfig.dirs[this.viteViewConfig.staticFileKey].dir +
-        `/${this.viteViewConfig.outPrefix}`;
+        `/${outPrefix}`;
       tpl = path.resolve(this.prodPath, tpl);
       entry =
         locals.ssr !== false && entry
           ? path
-              .resolve(this.prodPath, entry)
-              .replace(/(\.[jt]sx)|(\.ts)$/, '.js')
+            .resolve(this.prodPath, entry)
+            .replace(/(\.[jt]sx)|(\.ts)$/, '.js')
           : '';
     } else {
       tpl = path.resolve(options.root, tpl);
@@ -126,7 +133,8 @@ export class viteView implements IViewEngine {
         tpl,
         entry,
         locals.ctx.originalUrl,
-        locals['assign']
+        locals['assign'],
+        outPrefix
       );
     }
     return await this.getClientHtml(tpl, locals['assign']);

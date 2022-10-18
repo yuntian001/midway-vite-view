@@ -14,3 +14,4 @@ run/
 .tsbuildinfo
 .tsbuildinfo.*
 example/midway-vue-demo/public/html/
+example/midway-vue-demo-vite3-ts/public/html/
