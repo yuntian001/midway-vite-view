@@ -1,10 +1,14 @@
 export interface ViteViewConfig {
   prod?: boolean;
-  views: Record<string, string | {
-    entryServer?: string,
-    viteConfigFile?: string,
-    outPrefix?: string,
-  }>;
+  views: Record<
+    string,
+    | string
+    | {
+        entryServer?: string;
+        viteConfigFile?: string;
+        outPrefix?: string;
+      }
+  >;
   outPrefix: string;
   viteConfigFile?: string;
   staticFileKey: string;

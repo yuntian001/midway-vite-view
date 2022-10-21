@@ -1,3 +1,4 @@
+import { ViteMiddleware } from './middware/vite.middware';
 import { Configuration, Inject, App, Config } from '@midwayjs/decorator';
 import * as DefaultConfig from './config/config.default';
 import * as view from '@midwayjs/view';
@@ -5,7 +6,6 @@ import { ViteView } from './lib/view';
 import * as koa from '@midwayjs/koa';
 import * as staticFile from '@midwayjs/static-file';
 import { ViteViewConfig } from './interface';
-import { ViteService } from './service/vite.service';
 
 @Configuration({
   namespace: 'viteView',
@@ -20,9 +20,6 @@ export class MidwayViteViewConfiguration {
   @Inject()
   viewManager: view.ViewManager;
 
-  @Inject()
-  viteService:ViteService;
-
   @App()
   app: koa.Application;
 
@@ -34,7 +31,7 @@ export class MidwayViteViewConfiguration {
       this.viteViewConfig.prod === false ||
       !['prod', 'production'].includes(this.app.getEnv())
     ) {
-      this.app.useMiddleware(this.viteService.getViteMiddlewareArr());
+      this.app.useMiddleware(ViteMiddleware);
     }
     this.viewManager.use('viteView', ViteView);
   }

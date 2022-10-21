@@ -15,7 +15,8 @@
     "pretty": true,
     "declaration": true,
     "outDir": "dist",
-    "resolveJsonModule":true
+    "resolveJsonModule":true,
+    "typeRoots": [ "./types", "./node_modules/@types"]
   },
   "exclude": [
     "dist",

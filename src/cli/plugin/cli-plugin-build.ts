@@ -28,31 +28,51 @@ const fileDisplay = async function (
   }
 };
 
+interface LookupFileOptions {
+  pathOnly?: boolean
+  rootDir?: string
+  predicate?: (file: string) => boolean
+}
+export function lookupFile(
+  dir: string,
+  formats: string[],
+  options?: LookupFileOptions
+): string | undefined {
+  for (const format of formats) {
+    const fullPath = path.join(dir, format)
+    if (fs.existsSync(fullPath) && fs.statSync(fullPath).isFile()) {
+      const result = options?.pathOnly
+        ? fullPath
+        : fs.readFileSync(fullPath, 'utf-8')
+      if (!options?.predicate || options.predicate(result)) {
+        return result
+      }
+    }
+  }
+  const parentDir = path.dirname(dir)
+  if (
+    parentDir !== dir &&
+    (!options?.rootDir || parentDir.startsWith(options?.rootDir))
+  ) {
+    return lookupFile(parentDir, formats, options)
+  }
+}
+
+
 export class BuildPlugin extends BasePlugin {
   public options = {} as CommandOptions;
-  private pages = {} as Record<string, {
-    clientIndex: string[],
-    entryServers: string[],
-    viteConfigFile?: string,
-    outPrefix?: string,
-    rootDir: string
-  }>
+  private pages = {} as Record<
+    string,
+    {
+      clientIndex: string[];
+      entryServers: string[];
+      viteConfigFile?: string;
+      outPrefix?: string;
+      rootDir: string;
+    }
+  >;
   private env = 'prod';
-  private midwayConfig = {
-    viteView: {
-      views: {},
-      outPrefix: 'html',
-      staticFileKey: 'default',
-    } as ViteViewConfig,
-    staticFile: {
-      dirs: {
-        default: {
-          prefix: '/public',
-          dir: 'public',
-        },
-      },
-    },
-  };
+  private midwayConfig = {} as any;
   private viteCofigs: any = {};
   private rootDir = this.core.cwd;
   commands = {
@@ -104,6 +124,26 @@ export class BuildPlugin extends BasePlugin {
     }
   }
   async getConfig() {
+    this.midwayConfig = {
+      view: {
+        rootDir: {
+          default: path.join(this.rootDir, './view'),
+        }
+      },
+      viteView: {
+        views: {},
+        outPrefix: 'html',
+        staticFileKey: 'default',
+      } as ViteViewConfig,
+      staticFile: {
+        dirs: {
+          default: {
+            prefix: '/public',
+            dir: 'public',
+          },
+        },
+      },
+    }
     if (+this.options.type === 1) {
       try {
         let configFiles;
@@ -149,19 +189,21 @@ export class BuildPlugin extends BasePlugin {
     return filePath;
   }
   async getViteConfig(path?: string) {
-    const { config } = await loadConfigFromFile(
-      { command: 'build', mode: this.env, ssrBuild: true },
-      this.getViteFilePath(path ?? this.options.viteConfigFile)
-    );
-    this.viteCofigs[path ?? 'default'] = config;
-    if (
-      config.build &&
-      config.build.rollupOptions &&
-      config.build.rollupOptions.input
-    ) {
-      console.warn(
-        '[vite view] vite配置文件中指定了rollupOptions.input，打包时将应用此构建，如果不确定配置值是否正确，请删除build.rollupOptions.input配置'
+    if (!this.viteCofigs[path ?? 'default']) {
+      const { config } = await loadConfigFromFile(
+        { command: 'build', mode: this.env, ssrBuild: true },
+        this.getViteFilePath(path ?? this.options.viteConfigFile)
       );
+      this.viteCofigs[path ?? 'default'] = config;
+      if (
+        config.build &&
+        config.build.rollupOptions &&
+        config.build.rollupOptions.input
+      ) {
+        console.warn(
+          '[vite view] vite配置文件中指定了rollupOptions.input，打包时将应用此构建，如果不确定配置值是否正确，请删除build.rollupOptions.input配置'
+        );
+      }
     }
     return this.viteCofigs[path ?? 'default'];
   }
@@ -195,8 +237,8 @@ export class BuildPlugin extends BasePlugin {
         this.options[key] = this.getDiskPath(this.options[key]);
       }
     });
-    this.options.outDir = normalizePath(
-      this.options.outDir + `/${this.options.outPrefix}/`
+    this.options.outDir = path.resolve(
+      this.options.outDir, this.options.outPrefix
     );
     this.options.prefix = normalizePath(
       this.options.prefix + `/${this.options.outPrefix}/`
@@ -205,32 +247,44 @@ export class BuildPlugin extends BasePlugin {
 
   async setFile() {
     if (+this.options.type === 1) {
-      this.setFileByConfig();
+      await this.setFileByConfig();
     } else {
-      this.setFileByFileName();
+      await this.setFileByFileName();
     }
   }
 
   async run() {
     for (const [, info] of Object.entries(this.pages)) {
-      console.log('[vite view] build ' + (info.outPrefix ?? '') + '  ' + (info.viteConfigFile ?? '') + '\n')
+      console.log(
+        '[vite view] build ' +
+        (info.outPrefix ?? '') +
+        '  ' +
+        (info.viteConfigFile ?? '') +
+        '\n'
+      );
       await this.buildClient(
         info.clientIndex,
         normalizePath(this.options.prefix + `/${info.outPrefix}/`),
         path.resolve(this.options.outDir, info.outPrefix),
         info.viteConfigFile
       );
-      await info.entryServers.length && this.buildSSR(
-        info.entryServers,
-        normalizePath(this.options.prefix + `/${info.outPrefix}/`),
-        path.resolve(this.options.outDir, info.outPrefix),
-        info.viteConfigFile,
-        info.rootDir
-      )
+      info.entryServers.length &&
+        await this.buildSSR(
+          info.entryServers,
+          normalizePath(this.options.prefix + `/${info.outPrefix}/`),
+          this.options.outDir,
+          info.viteConfigFile,
+          info.rootDir
+        );
     }
   }
 
-  async buildClient(input: string[], prefix: string, outDir: string, viteConfigFile: string) {
+  async buildClient(
+    input: string[],
+    prefix: string,
+    outDir: string,
+    viteConfigFile: string
+  ) {
     console.log('[vite view] build client\n');
     await buildVite({
       base: prefix,
@@ -243,13 +297,10 @@ export class BuildPlugin extends BasePlugin {
         ssr: false,
       },
     });
-    const content = fs.readFileSync(
-      outDir + 'ssr-manifest.json',
-      'utf8'
-    );
+    const content = fs.readFileSync(path.resolve(outDir, 'ssr-manifest.json'), 'utf8');
     const viteConfig = await this.getViteConfig(viteConfigFile);
     fs.writeFileSync(
-      outDir + 'ssr-manifest.json',
+      path.resolve(outDir, 'ssr-manifest.json'),
       content.replace(
         new RegExp('"/' + (viteConfig.build?.assetsDir || 'assets'), 'g'),
         '"' + prefix + (viteConfig.build?.assetsDir || 'assets')
@@ -257,30 +308,55 @@ export class BuildPlugin extends BasePlugin {
     );
   }
 
-  async buildSSR(entryServers: string[], prefix: string, outDir: string, viteConfigFile: string,rootDir:string) {
+  async buildSSR(
+    entryServers: string[],
+    prefix: string,
+    outDir: string,
+    viteConfigFile: string,
+    rootDir: string
+  ) {
     console.log('[vite view] build ssr\n');
-    await Promise.all(entryServers.map((file:string)=>async () => {
-      await buildVite({
-        base: prefix,
-        publicDir: false,
-        configFile: viteConfigFile,
-        build: {
-          emptyOutDir: false,
-          outDir: path.resolve(outDir, 
-            path.relative(rootDir, file.slice(0, -path.basename(file).length))
-          ),
-          ssrManifest: false,
-          ssr: file,
-        },
-      });
-    }))
+    await Promise.all(
+      entryServers.map((file: string) => (async () => {
+        const viteConfig = await this.getViteConfig(viteConfigFile);
+        let packagePath = '';
+        let packageStr = '';
+        if(viteConfig.ssr && viteConfig.ssr.format === 'cjs'){
+          packagePath = lookupFile(viteConfig.root, ['package.json'], { pathOnly: true });
+          if (packagePath) {
+            packageStr = fs.readFileSync(packagePath, 'utf-8');
+            const packageInfo = JSON.parse(packageStr);
+            if (packageInfo.type && packageInfo.type === 'module') {
+              packageInfo.type = 'commonjs';
+              fs.writeFileSync(packagePath, JSON.stringify(packageInfo), 'utf-8');
+            } else {
+              packagePath = '';
+            }
+          }
+        }
+        await buildVite({
+          base: prefix,
+          publicDir: false,
+          configFile: viteConfigFile,
+          build: {
+            emptyOutDir: false,
+            outDir: path.resolve(
+              outDir,
+              path.relative(rootDir, file.slice(0, -path.basename(file).length))
+            ),
+            ssrManifest: false,
+            ssr: file,
+          },
+        });
+        packagePath && fs.writeFileSync(packagePath, packageStr, 'utf-8');
+      })()))
   }
 
   async setFileByConfig() {
-    for (const [index, ssr] of Object.entries(
+    const rootDir = this.midwayConfig.view.rootDir.default;
+    for (const [index, ssr] of Object.entries<any>(
       this.midwayConfig.viteView.views
     )) {
-      const rootDir = (await this.getViteConfig(typeof ssr === 'string' ? undefined : ssr.viteConfigFile)).root ?? this.rootDir;
       if (typeof ssr === 'string') {
         if (!this.pages['default--undefined']) {
           this.pages['default--undefined'] = {
@@ -289,28 +365,37 @@ export class BuildPlugin extends BasePlugin {
             outPrefix: '',
             viteConfigFile: this.options.viteConfigFile,
             rootDir,
-          }
+          };
         }
         this.pages['default--undefined'].clientIndex.push(
           path.resolve(rootDir, index)
         );
-        this.pages['default--undefined'].entryServers.push(
-          path.resolve(rootDir, ssr)
-        );
+        if (ssr) {
+          this.pages['default--undefined'].entryServers.push(
+            path.resolve(rootDir, ssr)
+          );
+        }
       } else {
-        if (!this.pages[(ssr.viteConfigFile ?? 'default') + '--' + ssr.outPrefix]) {
-          this.pages[(ssr.viteConfigFile ?? 'default') + '--' + ssr.outPrefix] = {
+        if (
+          !this.pages[(ssr.viteConfigFile ?? 'default') + '--' + ssr.outPrefix]
+        ) {
+          this.pages[(ssr.viteConfigFile ?? 'default') + '--' + ssr.outPrefix] =
+          {
             clientIndex: [],
             entryServers: [],
             viteConfigFile: ssr.viteConfigFile ?? this.options.viteConfigFile,
             outPrefix: ssr.outPrefix ?? '',
-            rootDir
-          }
+            rootDir,
+          };
         }
-        this.pages[(ssr.viteConfigFile ?? 'default') + '--' + ssr.outPrefix].clientIndex.push(
-          path.resolve(rootDir, index)
-        );
-        this.pages[(ssr.viteConfigFile ?? 'default') + '--' + ssr.outPrefix].entryServers.push(path.resolve(rootDir, ssr.entryServer));
+        this.pages[
+          (ssr.viteConfigFile ?? 'default') + '--' + ssr.outPrefix
+        ].clientIndex.push(path.resolve(rootDir, index));
+        if (ssr.entryServer) {
+          this.pages[
+            (ssr.viteConfigFile ?? 'default') + '--' + ssr.outPrefix
+          ].entryServers.push(path.resolve(rootDir, ssr.entryServer));
+        }
       }
     }
   }
@@ -320,12 +405,16 @@ export class BuildPlugin extends BasePlugin {
       clientIndex: [],
       entryServers: [],
       viteConfigFile: this.options.viteConfigFile,
-      rootDir:this.rootDir
-    }
+      rootDir: this.rootDir,
+    };
     await fileDisplay(this.options.viewDir, (fileName, filePath) => {
       if (fileName === 'index.html') {
         this.pages['default--undefined'].clientIndex.push(filePath);
-      } else if (['entry-server.js', 'entry-server.jsx', 'entry-server.tsx'].includes(fileName)) {
+      } else if (
+        ['entry-server.js', 'entry-server.jsx', 'entry-server.tsx'].includes(
+          fileName
+        )
+      ) {
         this.pages['default--undefined'].entryServers.push(fileName);
       }
     });
@@ -334,9 +423,9 @@ export class BuildPlugin extends BasePlugin {
   private getDiskPath(path?: string) {
     if (typeof path === 'string') {
       if (!path) {
-        return this.core.cwd;
+        return this.rootDir;
       }
-      return resolve(this.core.cwd, path);
+      return resolve(this.rootDir, path);
     } else {
       return path;
     }

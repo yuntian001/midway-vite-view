@@ -1,11 +1,10 @@
-import { Provide, Config, App, Inject } from '@midwayjs/decorator';
+import { ViteService } from '../service/vite.service';
+import { Provide, Config, App, Inject } from '@midwayjs/core';
 import { StaticFileOptions } from '@midwayjs/static-file';
 import { IViewEngine, RenderOptions } from '@midwayjs/view';
-import { createVite } from '../vite';
 import * as fs from 'fs';
 import * as path from 'path';
-import { Application } from '@midwayjs/koa';
-import { Context } from '@midwayjs/koa';
+import { Application, Context } from '@midwayjs/koa';
 import { ViteViewConfig } from '../interface';
 
 @Provide()
@@ -22,17 +21,21 @@ export class ViteView implements IViewEngine {
   @Inject()
   ctx: Context;
 
+  @Inject()
+  vite: ViteService;
+
   private prodPath: string;
   private prod: boolean;
+  private entryOutPrefix = '';
 
   async getSsrHtml(
     indexName: string,
     entryServerUrl: string,
     url: string,
     assign: object | undefined,
-    outPrefix: string
+    viteConfigFile?: string
   ) {
-    const vite = await createVite();
+    const vite = await this.vite.createVite(viteConfigFile);
     try {
       let template,
         render,
@@ -44,9 +47,7 @@ export class ViteView implements IViewEngine {
         template = await vite.transformIndexHtml(url, template);
         render = (await vite.ssrLoadModule(entryServerUrl)).render;
       } else {
-        manifest = require(this.staticFileConfig.dirs[
-          this.viteViewConfig.staticFileKey
-        ].dir + `/${outPrefix}/ssr-manifest.json`);
+        manifest = require(path.resolve(this.prodPath,this.entryOutPrefix,'ssr-manifest.json'));
         render = require(entryServerUrl).render;
       }
       const context = {};
@@ -66,13 +67,13 @@ export class ViteView implements IViewEngine {
       }
       return html;
     } catch (e) {
-      vite && vite.ssrFixStacktrace(e);
-      console.error('服务端渲染失败，执行客户端渲染逻辑', e);
-      return await this.getClientHtml(indexName, assign);
+      vite.ssrFixStacktrace(e);
+      this.ctx.logger.error('服务端渲染失败，执行客户端渲染逻辑', e);
+      return await this.getClientHtml(indexName, assign,url,viteConfigFile);
     }
   }
 
-  async getClientHtml(indexName, assign: object | undefined) {
+  async getClientHtml(indexName, assign: object | undefined,url:string,viteConfigFile:string) {
     let html = fs
       .readFileSync(indexName, 'utf-8')
       .replace('<!--preload-links-->', '')
@@ -82,7 +83,7 @@ export class ViteView implements IViewEngine {
         html = html.replace(new RegExp(`{{${key}}}`, 'g'), value);
       }
     }
-    return html;
+    return this.prod ? html : await (await this.vite.createVite(viteConfigFile)).transformIndexHtml(url,html);
   }
 
   async render(
@@ -105,16 +106,19 @@ export class ViteView implements IViewEngine {
       this.prod = ['prod', 'production'].includes(this.app.getEnv());
     }
     let entry = '' as undefined | string;
-    let outPrefix = this.viteViewConfig.outPrefix;
     const entryInfo = this.viteViewConfig.views[options.name];
+    let viteConfigFile = this.viteViewConfig.viteConfigFile;
     if (typeof entryInfo === 'object') {
       entry = entryInfo.entryServer;
-      outPrefix = outPrefix + (entryInfo.outPrefix ? ('/' + entryInfo.outPrefix) : '');
+      viteConfigFile = entryInfo.viteConfigFile ?? viteConfigFile;
+      this.entryOutPrefix = entryInfo.outPrefix ?? '';
+    }else{
+      entry = entryInfo;
     }
     if (this.prod) {
       this.prodPath =
         this.staticFileConfig.dirs[this.viteViewConfig.staticFileKey].dir +
-        `/${outPrefix}`;
+        `/${this.viteViewConfig.outPrefix}`;
       tpl = path.resolve(this.prodPath, tpl);
       entry =
         locals.ssr !== false && entry
@@ -134,9 +138,9 @@ export class ViteView implements IViewEngine {
         entry,
         locals.ctx.originalUrl,
         locals['assign'],
-        outPrefix
+        viteConfigFile
       );
     }
-    return await this.getClientHtml(tpl, locals['assign']);
+    return await this.getClientHtml(tpl, locals['assign'],locals.ctx.originalUrl,viteConfigFile);
   }
 }
