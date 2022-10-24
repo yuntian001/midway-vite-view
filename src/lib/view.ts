@@ -26,7 +26,7 @@ export class ViteView implements IViewEngine {
 
   private prodPath: string;
   private prod: boolean;
-  private entryOutPrefix = '';
+  private root = '';
 
   async getSsrHtml(
     indexName: string,
@@ -47,7 +47,11 @@ export class ViteView implements IViewEngine {
         template = await vite.transformIndexHtml(url, template);
         render = (await vite.ssrLoadModule(entryServerUrl)).render;
       } else {
-        manifest = require(path.resolve(this.prodPath,this.entryOutPrefix,'ssr-manifest.json'));
+        manifest = require(path.resolve(
+          this.prodPath,
+          this.root,
+          'ssr-manifest.json'
+        ));
         render = require(entryServerUrl).render;
       }
       const context = {};
@@ -69,11 +73,16 @@ export class ViteView implements IViewEngine {
     } catch (e) {
       vite.ssrFixStacktrace(e);
       this.ctx.logger.error('服务端渲染失败，执行客户端渲染逻辑', e);
-      return await this.getClientHtml(indexName, assign,url,viteConfigFile);
+      return await this.getClientHtml(indexName, assign, url, viteConfigFile);
     }
   }
 
-  async getClientHtml(indexName, assign: object | undefined,url:string,viteConfigFile:string) {
+  async getClientHtml(
+    indexName,
+    assign: object | undefined,
+    url: string,
+    viteConfigFile: string
+  ) {
     let html = fs
       .readFileSync(indexName, 'utf-8')
       .replace('<!--preload-links-->', '')
@@ -83,7 +92,11 @@ export class ViteView implements IViewEngine {
         html = html.replace(new RegExp(`{{${key}}}`, 'g'), value);
       }
     }
-    return this.prod ? html : await (await this.vite.createVite(viteConfigFile)).transformIndexHtml(url,html);
+    return this.prod
+      ? html
+      : await (
+          await this.vite.createVite(viteConfigFile)
+        ).transformIndexHtml(url, html);
   }
 
   async render(
@@ -111,8 +124,8 @@ export class ViteView implements IViewEngine {
     if (typeof entryInfo === 'object') {
       entry = entryInfo.entryServer;
       viteConfigFile = entryInfo.viteConfigFile ?? viteConfigFile;
-      this.entryOutPrefix = entryInfo.outPrefix ?? '';
-    }else{
+      this.root = entryInfo.root ?? '';
+    } else {
       entry = entryInfo;
     }
     if (this.prod) {
@@ -123,8 +136,8 @@ export class ViteView implements IViewEngine {
       entry =
         locals.ssr !== false && entry
           ? path
-            .resolve(this.prodPath, entry)
-            .replace(/(\.[jt]sx)|(\.ts)$/, '.js')
+              .resolve(this.prodPath, entry)
+              .replace(/(\.[jt]sx)|(\.ts)$/, '.js')
           : '';
     } else {
       tpl = path.resolve(options.root, tpl);
@@ -141,6 +154,11 @@ export class ViteView implements IViewEngine {
         viteConfigFile
       );
     }
-    return await this.getClientHtml(tpl, locals['assign'],locals.ctx.originalUrl,viteConfigFile);
+    return await this.getClientHtml(
+      tpl,
+      locals['assign'],
+      locals.ctx.originalUrl,
+      viteConfigFile
+    );
   }
 }

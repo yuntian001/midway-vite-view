@@ -5,13 +5,14 @@ export interface ViteViewConfig {
     | string
     | {
         entryServer?: string;
-        viteConfigFile?: string;
-        outPrefix?: string;
+        viteConfigFile?: string; //vite config的文件地址
+        root?: string; //vite config的root地址(相对于view文件夹)
       }
   >;
-  outPrefix: string;
-  viteConfigFile?: string;
-  staticFileKey: string;
+  outPrefix: string; //打包文件夹前缀 默认为html
+  viteConfigFile?: string; //vite config的文件地址
+  staticFileKey: string; //staticFile的key默认为default
+  root?: string; //vite config的root地址(相对于view文件夹)
 }
 
 export interface CommandOptions {

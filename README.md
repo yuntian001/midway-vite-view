@@ -1,6 +1,6 @@
 # midway-vite-view
 
-midway+vite 服务端渲染和客户端渲染组件,支持Vite2、Vite3。
+midway+vite 服务端渲染和客户端渲染组件,支持Vite2、Vite3,支持多vite项目并存。
 
 当前说明对应`^2.0.0`版本，`^1.0.0`(仅支持Vite2)文档请查看 [v1](https://github.com/yuntian001/midway-vite-view/tree/v1) 分支
 
@@ -35,10 +35,7 @@ $ npm install vite
 $ npm install midway-vite-view
 ```
 - 项目根目录下新建public文件夹
-- view 文件夹下创建放入对应视图文件
-
-- 修改 vite.config.js root 参数为process.cwd()+'/view'
-
+- view 文件夹下创建放入对应vue项目
 - midway configuration.ts中引入视图文件
 ```
 import * as viteView from 'midway-vite-view';//引入view组件
@@ -92,10 +89,17 @@ import * as viteView from 'midway-vite-view';//引入view组件
 | 配置项      |类型|是否必须 | 说明 |
 | -----------| ----------- | ----------- |----------- |
 | prod      | boolean| 否 |是否是发布环境 如果不传用运行环境是否为prod/production以区分|
-| views | `{[key:string]:string}`  | 是 | key为index.html路径(相对于view文件夹)，value为服务端渲染entry-server路径(相对于view文件夹,如果没有entry-server，填'')|
+| views | `{[key:string]:string|object}`  | 是 | key为index.html路径(相对于view文件夹)，value为服务端渲染entry-server路径(相对于view文件夹,如果没有entry-server，填'')|
 | outPrefix | string | 否 | 打包前缀目录，会在static-file文件夹下创建子文件夹进行打包,默认为html |
 | viteConfigFile | string | 否 | vite配置文件地址，默认按vite规则选择vite.config.js/vite.config.ts | 
 | staticFileKey | string | 否 | 对应的staticFile.dirs的key 默认为default |
+| root | string | 否 | vite.coinfig的root根目录相对于view文件夹的相对路径 默认为`''`|
+
+| views      |类型|是否必须 | 说明 |
+| -----------| ----------- | ----------- |----------- |
+| entryServer | string | 否 | 服务端渲染entry-server路径(相对于view文件夹,如果没有entry-server，填'') |
+| viteConfigFile | string | 否 | vite config的文件地址，多vite项目时需要分别设置此参数，默认使用外层配置的viteConfigFile |
+| root | string | 否 | vite.coinfig的root根目录相对于view文件夹的相对路径 默认使用外层配置的`root`|
 
 ## 打包命令 vite-view build 参数说明
 传参方式为 vite-view build --type 1

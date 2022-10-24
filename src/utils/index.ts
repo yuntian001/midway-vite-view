@@ -15,14 +15,13 @@ export function get(object: any, path: string): any {
 }
 
 //获取可用端口号
-export function getPort (port:number) {
-  return new Promise<number>((resolve)=>{  
-    const server = net.createServer().on('error', (e)=>{
-        getPort(++port).then(resolve);
+export function getPort(port: number) {
+  return new Promise<number>(resolve => {
+    const server = net.createServer().on('error', () => {
+      getPort(++port).then(resolve);
     });
-    server.listen(port, function () {
-      server.close(()=>resolve(port))
-    })
-  })
- 
+    server.listen(port, () => {
+      server.close(() => resolve(port));
+    });
+  });
 }
