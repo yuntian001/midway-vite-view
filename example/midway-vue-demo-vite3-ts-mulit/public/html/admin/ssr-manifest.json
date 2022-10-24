@@ -1,0 +1,110 @@
+{
+  "../../vite/modulepreload-polyfill": [
+    "/public/html/admin/assets/vite.4a748afd.svg",
+    "/public/html/admin/assets/vue.5532db34.svg"
+  ],
+  "../../node_modules/@vue/shared/dist/shared.esm-bundler.js": [
+    "/public/html/admin/assets/vite.4a748afd.svg",
+    "/public/html/admin/assets/vue.5532db34.svg"
+  ],
+  "../../node_modules/@vue/reactivity/dist/reactivity.esm-bundler.js": [
+    "/public/html/admin/assets/vite.4a748afd.svg",
+    "/public/html/admin/assets/vue.5532db34.svg"
+  ],
+  "../../node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js": [
+    "/public/html/admin/assets/vite.4a748afd.svg",
+    "/public/html/admin/assets/vue.5532db34.svg"
+  ],
+  "../../node_modules/@vue/runtime-dom/dist/runtime-dom.esm-bundler.js": [
+    "/public/html/admin/assets/vite.4a748afd.svg",
+    "/public/html/admin/assets/vue.5532db34.svg"
+  ],
+  "src/assets/vite.svg": [
+    "/public/html/admin/assets/vite.4a748afd.svg",
+    "/public/html/admin/assets/vue.5532db34.svg"
+  ],
+  "src/assets/vue.svg": [
+    "/public/html/admin/assets/vite.4a748afd.svg",
+    "/public/html/admin/assets/vue.5532db34.svg"
+  ],
+  "../../node_modules/vue-demi/lib/index.mjs": [
+    "/public/html/admin/assets/vite.4a748afd.svg",
+    "/public/html/admin/assets/vue.5532db34.svg"
+  ],
+  "node_modules/pinia/dist/pinia.mjs": [
+    "/public/html/admin/assets/vite.4a748afd.svg",
+    "/public/html/admin/assets/vue.5532db34.svg"
+  ],
+  "src/store.ts": [
+    "/public/html/admin/assets/vite.4a748afd.svg",
+    "/public/html/admin/assets/vue.5532db34.svg"
+  ],
+  "src/components/HelloWorld.vue?vue&type=script&setup=true&lang.ts": [
+    "/public/html/admin/assets/vite.4a748afd.svg",
+    "/public/html/admin/assets/vue.5532db34.svg"
+  ],
+  "src/components/HelloWorld.vue?vue&type=style&index=0&scoped=33aeb8e8&lang.css": [
+    "/public/html/admin/assets/vite.4a748afd.svg",
+    "/public/html/admin/assets/vue.5532db34.svg"
+  ],
+  "../../\u0000plugin-vue:export-helper": [
+    "/public/html/admin/assets/vite.4a748afd.svg",
+    "/public/html/admin/assets/vue.5532db34.svg"
+  ],
+  "src/components/HelloWorld.vue": [
+    "/public/html/admin/assets/vite.4a748afd.svg",
+    "/public/html/admin/assets/vue.5532db34.svg"
+  ],
+  "src/components/Header.vue": [
+    "/public/html/admin/assets/vite.4a748afd.svg",
+    "/public/html/admin/assets/vue.5532db34.svg"
+  ],
+  "src/App.vue?vue&type=script&setup=true&lang.ts": [
+    "/public/html/admin/assets/vite.4a748afd.svg",
+    "/public/html/admin/assets/vue.5532db34.svg"
+  ],
+  "src/App.vue?vue&type=style&index=0&scoped=295b27cc&lang.css": [
+    "/public/html/admin/assets/vite.4a748afd.svg",
+    "/public/html/admin/assets/vue.5532db34.svg"
+  ],
+  "src/App.vue": [
+    "/public/html/admin/assets/vite.4a748afd.svg",
+    "/public/html/admin/assets/vue.5532db34.svg"
+  ],
+  "../../\u0000vite/preload-helper": [
+    "/public/html/admin/assets/vite.4a748afd.svg",
+    "/public/html/admin/assets/vue.5532db34.svg"
+  ],
+  "../../node_modules/vue-router/dist/vue-router.mjs": [
+    "/public/html/admin/assets/vite.4a748afd.svg",
+    "/public/html/admin/assets/vue.5532db34.svg"
+  ],
+  "src/router.ts": [
+    "/public/html/admin/assets/vite.4a748afd.svg",
+    "/public/html/admin/assets/vue.5532db34.svg"
+  ],
+  "src/style.css": [
+    "/public/html/admin/assets/vite.4a748afd.svg",
+    "/public/html/admin/assets/vue.5532db34.svg"
+  ],
+  "src/main.ts": [
+    "/public/html/admin/assets/vite.4a748afd.svg",
+    "/public/html/admin/assets/vue.5532db34.svg"
+  ],
+  "src/entry-client.ts": [
+    "/public/html/admin/assets/vite.4a748afd.svg",
+    "/public/html/admin/assets/vue.5532db34.svg"
+  ],
+  "index.html": [
+    "/public/html/admin/assets/vite.4a748afd.svg",
+    "/public/html/admin/assets/vue.5532db34.svg"
+  ],
+  "about.e2b41c85.js": [],
+  "home.f0bb0d92.js": [],
+  "src/pages/about.vue": [
+    "/public/html/admin/assets/about.e2b41c85.js"
+  ],
+  "src/pages/home.vue": [
+    "/public/html/admin/assets/home.f0bb0d92.js"
+  ]
+}
