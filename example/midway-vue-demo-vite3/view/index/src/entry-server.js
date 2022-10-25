@@ -6,7 +6,6 @@ import serialize from 'serialize-javascript';
 export async function render(url, manifest) {
   const { app, router, pinia } = createApp()
   // set the router to the desired URL before rendering (需要把base,替换为/)
-  console.log(url);
   await router.push(url.replace(router.options.history.base || '/','/'))
   await router.isReady()
 

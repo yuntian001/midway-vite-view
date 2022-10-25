@@ -5,7 +5,7 @@ import { createApp } from './main'
 export async function render(url, manifest) {
   const { app, router } = createApp()
   // set the router to the desired URL before rendering (需要把base,替换为/)
-  await router.push(url.replace(router.options.history.base ?? '/','/'))
+  await router.push(url.replace(router.options.history.base ?? '/','/').replace('//','/'))
   await router.isReady()
 
   // passing SSR context object which will be available via useSSRContext()
