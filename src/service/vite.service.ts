@@ -33,6 +33,9 @@ const vitePlugin = (viewRoot: string, appDir: string) => ({
       cachePostfix = cachePostfix + '_';
     }
     if (!config.base) {
+      if (!config.root) {
+        throw new Error('vite config 中必须配置正确的base或root参数');
+      }
       config.base = normalizePath(
         '/' +
           path.relative(viewRoot, path.resolve(process.cwd(), config.root)) +
