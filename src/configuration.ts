@@ -1,5 +1,5 @@
 import { ViteMiddleware } from './middware/vite.middware';
-import { Configuration, Inject, App, Config } from '@midwayjs/decorator';
+import { Configuration, Inject, App, Config } from '@midwayjs/core';
 import * as DefaultConfig from './config/config.default';
 import * as view from '@midwayjs/view';
 import { ViteView } from './lib/view';

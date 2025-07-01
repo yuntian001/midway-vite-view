@@ -1,5 +1,4 @@
-import { IMiddleware, Init, Inject } from '@midwayjs/core';
-import { Middleware } from '@midwayjs/decorator';
+import { Middleware, IMiddleware, Init, Inject } from '@midwayjs/core';
 import { NextFunction, Context } from '@midwayjs/koa';
 import { ViteService, MiddlewareArr } from '../service/vite.service';
 

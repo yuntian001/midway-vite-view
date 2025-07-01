@@ -1,6 +1,12 @@
 import { ViteViewConfig } from './../interface';
-import { App, MidwayConfig } from '@midwayjs/core';
-import { Config, Provide, Scope, ScopeEnum } from '@midwayjs/decorator';
+import {
+  Config,
+  Provide,
+  Scope,
+  ScopeEnum,
+  App,
+  MidwayConfig,
+} from '@midwayjs/core';
 import { createServer, ViteDevServer, normalizePath } from 'vite';
 import { version } from 'vite/package.json';
 import { getPort } from '../utils';
