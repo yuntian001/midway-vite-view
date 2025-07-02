@@ -63,7 +63,11 @@ export class ViteView implements IViewEngine {
       let html = template
         .replace('<!--preload-links-->', preloadLinks)
         .replace('<!--app-html-->', appHtml)
-        .replace('<html', '<html data-ssr="true"');
+        .replace('<html', '<html data-ssr="true"')
+        .replace(
+          /<!--ssr-no-content-start-->((?!((<!--ssr-no-content-start-->)|(<!--ssr-no-content-end-->))).)*<!--ssr-no-content-end-->/g,
+          ''
+        );
       if (assign) {
         for (const [key, value] of Object.entries(assign)) {
           html = html.replace(new RegExp(`{{${key}}}`, 'g'), value);
