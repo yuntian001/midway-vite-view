@@ -116,3 +116,8 @@ import * as viteView from 'midway-vite-view';//引入view组件
 | outPrefix | viteView.outPrefix 或 html | 编译输出前缀,会在static-file文件夹下创建子文件夹进行打包 |
 
 
+## 规则说明
+- 服务端渲染时`html` 文件中`<!--ssr-no-content-start-->` `<!--ssr-no-content-end-->`间的内容会被清空（客户端渲染时不做任何处理）
+- 服务端渲染时`html` 文件中必须含有`<!--app-html-->`,输出时会替换为解析后的html内容
+- 服务端渲染时`html` 文件中必须含有`<!--preload-links-->`,输出时会替换为资源引用语句
+- vue 服务端渲染时不会触发响应性，建议`vue3`在setup中用顶层`await`获取数据
